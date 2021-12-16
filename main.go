@@ -2,24 +2,14 @@ package main
 
 import "fmt"
 import "log"
-//import "io"
 import "net/http"
-//import "github.com/PuerkitoBio/goquery"
-// import "strings"
 import "strconv"
 
 import 	"github.com/tebeka/selenium"
 import "os"
+import "encoding/json"
 
-type html struct {
-	Body body `xml:"body"`
-}
-
-type body struct {
-	Content string `xml:",innerxml"`
-}
-
-type teamResult struct {
+type TeamResult struct {
     TeamName string
     TeamPoints int
 }
@@ -27,7 +17,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
 }
 
-func getMap(url string) map[string][]teamResult {
+func getMap(url string) map[int][]TeamResult {
 	// Request the HTML page.
 	// Start a Selenium WebDriver server instance (if one is not already
     	// running).
@@ -56,22 +46,38 @@ func getMap(url string) map[string][]teamResult {
     		panic(err)
     	}
     	defer wd.Quit()
+        wd.ResizeWindow("", 724, 144340)
 
-    	// Navigate to the simple playground interface.
     	if err := wd.Get(url); err != nil {
     		panic(err)
     	}
 
-    	// Get the list of matches
-    	matches, err := wd.FindElements(selenium.ByCSSSelector, ".match")
+    	// This is to close the accept cookie popup...
+    	button, err := wd.FindElement(selenium.ByCSSSelector, ".css-47sehv")
+        if err == nil {
+            // panic(err)
+            button.Click()
+        }
+
+
+    	calendar, err := wd.FindElement(selenium.ByCSSSelector, ".calendar")
     	if err != nil {
     		panic(err)
     	}
 
-        mapp := make(map[string][]teamResult)
+    	// Get the list of matches
+    	matches, err := calendar.FindElements(selenium.ByCSSSelector, ".match-results")
+    	if err != nil {
+    		panic(err)
+    	}
+
+        mapp := make(map[int][]TeamResult)
         // For each match, get the score
-    	for _, match := range matches {
+    	for i, match := range matches {
     	    teams, err := match.FindElements(selenium.ByCSSSelector, ".team")
+            if err != nil {
+                panic(err)
+            }
             if err != nil {
                 panic(err)
             }
@@ -83,20 +89,23 @@ func getMap(url string) map[string][]teamResult {
                     if err != nil {
                         panic(err)
                     }
-                    fmt.Printf("%d %s", teamScore, teamName);
+                    if _, ok := mapp[i]; !ok {
+                        mapp[i] = make([]TeamResult, 0)
+                    }
+
+                    list := mapp[i]
+                    var teamResult TeamResult
+                    teamResult.TeamName = teamName
+                    teamResult.TeamPoints = teamScore
+                    list = append(list, teamResult)
+                    mapp[i] = list
+                } else {
+                    break
                 }
             }
         }
         return mapp;
 }
-
-/* private String getTeamNameFromMatch(Element t) {
-        return t.select(".team-name").get(0).text();
-    } */
-
-/*     private Integer getTeamPointsFromMatch(Element t) {
-        return Integer.parseInt(t.select(".team-score").get(0).text());
-    } */
 
 func getTeamScoreFromMatch(element selenium.WebElement) string {
     score, err := element.FindElement(selenium.ByCSSSelector, ".team-score")
@@ -128,7 +137,14 @@ func isValidResult(teamName string, teamScore string) bool {
 
 
 func parseHandler(w http.ResponseWriter, r *http.Request) {
-	getMap("https://leghe.fantacalcio.it/fanta-pescio/calendario")
+	data := getMap("https://leghe.fantacalcio.it/fanta-pescio/calendario")
+
+	jData, err := json.Marshal(data)
+    if err != nil {
+        // handle error
+    }
+    w.Header().Set("Content-Type", "application/json")
+    w.Write(jData)
 }
 
 func main() {
