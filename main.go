@@ -9,7 +9,7 @@ import (
 func main() {
 	e := echo.New()
 
-	// Create an instance of your server implementation
+	// Create an instance of server implementation
 	serverImpl := &server.MyServer{}
 
 	// Register the server handlers
