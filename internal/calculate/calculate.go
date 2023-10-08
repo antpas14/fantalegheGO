@@ -2,18 +2,21 @@ package calculate
 
 import (
 	"github.com/antpas14/fantalegheEV-api"
+
     "fantalegheGO/internal/fetcher"
     "fantalegheGO/internal/parser"
+
     "fmt"
     "log"
+    "sync"
 
 )
 
 // GetRanks retrieves a list of ranks (api.Rank)
 func GetRanks(leagueName string) []api.Rank {
     // Retrieve raw data using fetcher
-    rankingsRaw, _ := fetcher.Retrieve("https://leghe.fantacalcio.it/fanta-pescio/classifica")
-    calendarRaw, _ := fetcher.Retrieve("https://leghe.fantacalcio.it/fanta-pescio/calendario")
+    rankingsRaw, _ := fetcher.Retrieve("https://leghe.fantacalcio.it/" + leagueName + "/classifica")
+    calendarRaw, _ := fetcher.Retrieve("https://leghe.fantacalcio.it/" + leagueName + "/calendario")
 
 	parser := &parser.ParserImpl{}
 
@@ -24,48 +27,57 @@ func GetRanks(leagueName string) []api.Rank {
     }
     fmt.Printf("LeagueName is %s", leagueName)
 
-    fmt.Printf("points are %s", rankings)
-    fmt.Printf("results are %s", results)
-
 	// Perform data retrieval and processing here
 	// For this example, we'll return a static list of ranks
 	return calculate(rankings, results)
 }
 
-func calculate(rankings map[string]int, results map[int][]parser.TeamResult) []api.Rank {
-    var mapp = make(map[string]float64)
+func calculate(rankings map[string]int, results *sync.Map) []api.Rank {
+    var evPointsMap = make(map[string]float64)
 
     for teamName,_ := range rankings {
-        mapp[teamName] = 0
+        evPointsMap[teamName] = 0
     }
     var combinations = float64(len(rankings) - 1)
+    var teamResults []parser.TeamResult
 
-    for _, teamResults := range results {
-        for i, t1 := range teamResults {
-            if t1.Points == -1 {
-                break
-                }
+    results.Range(func(_, value interface{}) bool {
+        teamResults = make([]parser.TeamResult, 0)
+        if trSlice, ok := value.([]parser.TeamResult); ok {
+            teamResults = append(teamResults, trSlice...)
+        }
+        for i, teamResult1 := range teamResults {
+            if teamResult1.Points == -1 {
+                break;
+            }
             var expectedPointForTeamForMatch float64
             var pointsForAllCombinations float64
-            for j, t2 := range teamResults {
+
+            for j, teamResult2 := range teamResults {
                 if (i != j) {
-                    pointsForAllCombinations = pointsForAllCombinations + calculatePoints(t1, t2)
+                    pointsForAllCombinations = pointsForAllCombinations + calculatePoints(teamResult1, teamResult2)
                 }
             }
             expectedPointForTeamForMatch = pointsForAllCombinations / combinations
-            mapp[t1.Name] = mapp[t1.Name] + expectedPointForTeamForMatch
+            evPointsMap[teamResult1.Name] = evPointsMap[teamResult1.Name] + expectedPointForTeamForMatch
         }
-    }
+        return true;
+    })
     listRank := make([]api.Rank, 0)
-    for teamName, teamEVPoints := range mapp {
+    for teamName, teamEVPoints := range evPointsMap {
         points := rankings[teamName]
-        var rank api.Rank
-        rank.Team = &teamName
-        rank.EvPoints = &teamEVPoints
-        rank.Points = &points
+
+        // Create new variables for teamName and evPoints inside the loop
+        teamNameCopy := teamName
+        evPointsCopy := teamEVPoints
+
+        rank := api.Rank{
+            Team:     &teamNameCopy,
+            EvPoints: &evPointsCopy,
+            Points:   &points,
+        }
         listRank = append(listRank, rank)
     }
-
     return listRank
 }
 
