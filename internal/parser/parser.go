@@ -6,7 +6,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-// 	"fmt"
 )
 
 type Parser interface {
@@ -30,8 +29,6 @@ func (p *ParserImpl) GetPoints(rankingsPage string) (map[string]int, error) {
 	rankingTable := p.getRankingTable(doc)
 
 	pointsMap := make(map[string]int)
-//     fmt.Printf("Ranking page %s", rankingsPage)
-//     fmt.Printf("Ranking table %s", rankingTable)
 	rankingTable.Each(func(i int, s *goquery.Selection) {
 		teamName := p.getTeamNameFromRankingTable(s)
 		teamPoints := p.getTeamPointsFromRankingTable(s)
@@ -41,14 +38,15 @@ func (p *ParserImpl) GetPoints(rankingsPage string) (map[string]int, error) {
 	return pointsMap, nil
 }
 
-func (p *ParserImpl) GetResults(calendarPage string) (map[int][]TeamResult, error) {
+func (p *ParserImpl) GetResults(calendarPage string) (*sync.Map, error) {
 doc, err := goquery.NewDocumentFromReader(strings.NewReader(calendarPage))
+	resultsMap := &sync.Map{}
+
 	if err != nil {
-		return nil, err
+		return resultsMap, err
 	}
 
 	calendarDays := p.selectCalendarDaysFromCalendarDocument(doc)
-	resultsMap := make(map[int][]TeamResult)
 	var counter int32
 
 	var wg sync.WaitGroup
@@ -65,17 +63,21 @@ doc, err := goquery.NewDocumentFromReader(strings.NewReader(calendarPage))
 				teams.Each(func(k int, team *goquery.Selection) {
 					teamName := p.getTeamNameFromMatch(team)
 					teamPoints := p.getTeamPointsFromMatch(team)
-					teamResults = append(teamResults, TeamResult{Name: teamName, Points: teamPoints})
+					if teamPoints != -1 {
+					    teamResults = append(teamResults, TeamResult{Name: teamName, Points: teamPoints})
+					}
 				})
 			})
 
-			atomic.AddInt32(&counter, 1)
-			resultsMap[int(atomic.LoadInt32(&counter))] = teamResults
+
+            if len(teamResults) > 0 {
+                atomic.AddInt32(&counter, 1)
+                strAtomic := strconv.FormatInt(int64(atomic.LoadInt32(&counter)), 10);
+                resultsMap.Store(strAtomic, teamResults);
+            }
 		}(i, s)
 	})
-
-	wg.Wait()
-
+    wg.Wait()
 	return resultsMap, nil
 }
 
