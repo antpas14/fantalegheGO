@@ -5,4 +5,4 @@ TODO:
 - configuration file so docker is usable
 - docker-compose
 - ~~dependabot~~
-- CI/CD
+~~- CI/CD~~

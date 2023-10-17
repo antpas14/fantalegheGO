@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+        fantaleghe-backend: 
+                image: antpas14/fantaleghe-backend-go
+                links:
+                        - "web-fetcher:web-fetcher"
+                depends_on:
+                        - web-fetcher
+        ui:
+                image: antpas14/fantaleghe-ui
+                ports: 
+                        - "3001:3001"
+                links: 
+                       - "fantaleghe-backend:fantaleghe-backend"
+                depends_on: 
+                        - fantaleghe-backend                       
+        web-fetcher:
+                image: antpas14/web-fetcher
+            
