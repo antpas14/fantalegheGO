@@ -7,9 +7,15 @@ import (
 	"net/http"
 )
 
-var urlFetcher = "http://localhost:5000/retrieve"
+type Fetcher interface {
+	Retrieve(url string) (string, error)
+}
 
-func Retrieve(url string) (string, error) {
+type FetcherImpl struct{
+    FetcherUrl string
+}
+
+func (f *FetcherImpl)  Retrieve(url string) (string, error) {
 	// Create a JSON request body
 	requestBody := map[string]string{
 		"url": url,
@@ -22,7 +28,7 @@ func Retrieve(url string) (string, error) {
 	}
 
 	// Make the POST request
-	resp, err := http.Post(urlFetcher, "application/json", bytes.NewBuffer(jsonData))
+	resp, err := http.Post(f.FetcherUrl + "/retrieve", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		return "", err
 	}
