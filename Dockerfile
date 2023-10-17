@@ -17,6 +17,7 @@ FROM alpine:latest
 WORKDIR /
 COPY --from=BuildStage /fantaleghe/bin /bin
 RUN adduser -D -g '' user
+ENV DOCKER_ENV=true
 
 USER user:user
 ENTRYPOINT ["/bin/fantalegheGO"]

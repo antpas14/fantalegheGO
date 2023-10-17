@@ -3,6 +3,7 @@ package calculate
 import (
 	"github.com/antpas14/fantalegheEV-api"
 
+    "fantalegheGO/internal/config"
     "fantalegheGO/internal/fetcher"
     "fantalegheGO/internal/parser"
 
@@ -14,11 +15,17 @@ import (
 
 // GetRanks retrieves a list of ranks (api.Rank)
 func GetRanks(leagueName string) []api.Rank {
-    // Retrieve raw data using fetcher
-    rankingsRaw, _ := fetcher.Retrieve("https://leghe.fantacalcio.it/" + leagueName + "/classifica")
-    calendarRaw, _ := fetcher.Retrieve("https://leghe.fantacalcio.it/" + leagueName + "/calendario")
+    config, err := config.LoadConfig();
+    if err != nil {
+        log.Fatal(err)
+    }
 
 	parser := &parser.ParserImpl{}
+    fetcher := &fetcher.FetcherImpl{config.FetcherUrl}
+    // Retrieve raw data using fetcher
+    rankingsRaw, _ := fetcher.Retrieve(config.BaseUrl + leagueName + config.RankingUrl)
+    calendarRaw, _ := fetcher.Retrieve(config.BaseUrl + leagueName + config.CalendarUrl)
+
 
     rankings, err := parser.GetPoints(rankingsRaw)
     results, err := parser.GetResults(calendarRaw)
