@@ -5,8 +5,8 @@ go 1.21.0
 require (
 	github.com/PuerkitoBio/goquery v1.8.1
 	github.com/antpas14/fantalegheEV-api v0.0.0-20230814090034-69b8a92d0163
+	github.com/labstack/echo/v4 v4.11.3
 	gopkg.in/yaml.v2 v2.4.0
-	github.com/labstack/echo/v4 v4.11.2
 )
 
 require (
