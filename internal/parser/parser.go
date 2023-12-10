@@ -10,7 +10,7 @@ import (
 
 type Parser interface {
 	GetPoints(rankingsPage string) (map[string]int, error)
-	GetResults(calendarPage string) (map[int][]TeamResult, error)
+	GetResults(calendarPage string) (*sync.Map, error)
 }
 
 type TeamResult struct {
