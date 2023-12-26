@@ -14,7 +14,7 @@ import (
 
 // Create fetcher and parser instances at the module level
 var configInstance, _ = config.LoadConfig()
-var parserInstance = &parser.ParserImpl{}
+// var parserInstance = &parser.ParserImpl{}
 var fetcherInstance = &fetcher.FetcherImpl{configInstance.FetcherUrl}
 
 // GetRanks retrieves a list of ranks (api.Rank)
