@@ -2,6 +2,7 @@ package calculate
 
 import (
 	"fantalegheGO/internal/parser"
+    "fantalegheGO/internal/calculate"
 	"github.com/stretchr/testify/mock"
 	"testing"
 	"sync"
@@ -47,10 +48,10 @@ func TestGetRanks(t *testing.T) {
     results := make(map[int][]parser.TeamResult)
     results[1] = []parser.TeamResult{{Name: "TeamA", Points: 3}, {Name: "TeamB", Points: 1}}
 
-    mockParser.On("GetResults", mock.Anything).Return(results, nil)
+    mockParser.On("GetResults", mock.Anything).Return(convertToSyncMap(results), nil)
 
     // Pass the mockParser as an argument to GetRanks
-    ranks := GetRanks("YourLeagueName", mockParser)
+    ranks := calculate.GetRanks("YourLeagueName", mockParser)
 
     // Assert the results or behavior based on the mockParser's expectations
     points, err := mockParser.GetPoints("")
@@ -68,4 +69,16 @@ func TestGetRanks(t *testing.T) {
     t.Log("Final ranks:", ranks)
     // Ensure that the mock parser's expectations were met
     mockParser.AssertExpectations(t)
+}
+
+// Utils
+
+func convertToSyncMap(results map[int][]parser.TeamResult) *sync.Map {
+	syncMap := new(sync.Map)
+
+	for key, value := range results {
+		syncMap.Store(key, value)
+	}
+
+	return syncMap
 }

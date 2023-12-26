@@ -21,7 +21,7 @@ type TeamResult struct {
 type ParserImpl struct{}
 
 func (p *ParserImpl) GetPoints(rankingsPage string) (map[string]int, error) {
-    doc, err := goquery.NewDocumentFromReader(strings.NewReader(rankingsPage))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(rankingsPage))
 	if err != nil {
 		return nil, err
 	}
