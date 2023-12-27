@@ -2,12 +2,9 @@ package calculate
 
 import (
 	"github.com/antpas14/fantalegheEV-api"
-
     "fantalegheGO/internal/config"
     "fantalegheGO/internal/fetcher"
     "fantalegheGO/internal/parser"
-
-    "fmt"
     "log"
     "sync"
 )
