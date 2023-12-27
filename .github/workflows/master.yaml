@@ -22,6 +22,8 @@ jobs:
         run: go get .
       - name: Build
         run: go build -v ./...
+      - name: Install test dependencies
+        run: go get -t fantalegheGO/internal/calculate
       - name: Run Tests with Coverage
         run: go test -coverprofile=coverage.out ./...
 
