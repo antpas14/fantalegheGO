@@ -10,7 +10,7 @@ import (
 
 type Parser interface {
 	GetPoints(rankingsPage string) (map[string]int, error)
-	GetResults(calendarPage string) (map[int][]TeamResult, error)
+	GetResults(calendarPage string) (*sync.Map, error)
 }
 
 type TeamResult struct {
@@ -21,7 +21,7 @@ type TeamResult struct {
 type ParserImpl struct{}
 
 func (p *ParserImpl) GetPoints(rankingsPage string) (map[string]int, error) {
-    doc, err := goquery.NewDocumentFromReader(strings.NewReader(rankingsPage))
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(rankingsPage))
 	if err != nil {
 		return nil, err
 	}
