@@ -40,3 +40,13 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fantaleghe-backend-go:latest
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
