@@ -2,7 +2,6 @@ package calculate
 
 import (
 	"fantalegheGO/internal/parser"
-    "fantalegheGO/internal/calculate"
 	"github.com/stretchr/testify/mock"
 	"testing"
 	"sync"
