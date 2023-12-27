@@ -11,31 +11,31 @@ import (
     "log"
     "sync"
 )
+type Calculate interface {
+	GetRanks(url string) []api.Rank
+}
+
+type CalculateImpl struct{
+}
 
 // Create fetcher and parser instances at the module level
 var configInstance, _ = config.LoadConfig()
-// var parserInstance = &parser.ParserImpl{}
+var parserInstance = &parser.ParserImpl{}
 var fetcherInstance = &fetcher.FetcherImpl{configInstance.FetcherUrl}
 
 // GetRanks retrieves a list of ranks (api.Rank)
-func GetRanks(leagueName string, parserInstance parser.Parser) []api.Rank {
-    fmt.Printf("parser instance is %v", parserInstance)
+func (c *CalculateImpl) GetRanks(leagueName string) []api.Rank {
 	// Retrieve raw data using fetcher
 	rankingsRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.RankingUrl)
 	calendarRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.CalendarUrl)
-//     fmt.Printf("RESULTS_RAW IS %v", calendarRaw)
 
 	rankings, err := parserInstance.GetPoints(rankingsRaw)
 	results, err := parserInstance.GetResults(calendarRaw)
-    fmt.Printf("RESULTS IS %v", results)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("LeagueName is %s", leagueName)
 
-	// Perform data retrieval and processing here
-	// For this example, we'll return a static list of ranks
 	return calculate(rankings, results)
 }
 
@@ -47,7 +47,6 @@ func calculate(rankings map[string]int, results *sync.Map) []api.Rank {
 	}
 	var combinations = float64(len(rankings) - 1)
 	var teamResults []parser.TeamResult
-    fmt.Printf("RESULTS IS %v", results)
 
 	results.Range(func(_, value interface{}) bool {
 		teamResults = make([]parser.TeamResult, 0)
@@ -57,7 +56,6 @@ func calculate(rankings map[string]int, results *sync.Map) []api.Rank {
 			teamResults = append(teamResults, trSlice...)
 		}
 		for i, teamResult1 := range teamResults {
-		    fmt.Printf("TR IS %v", teamResult1)
 			if teamResult1.Points == -1 {
 				break
 			}
@@ -89,7 +87,6 @@ func calculate(rankings map[string]int, results *sync.Map) []api.Rank {
 		}
 		listRank = append(listRank, rank)
 	}
-	fmt.Printf("list rank is %v", listRank)
 	return listRank
 }
 

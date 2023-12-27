@@ -50,7 +50,9 @@ func TestGetRanks(t *testing.T) {
     mockParser.On("GetResults", mock.Anything).Return(convertToSyncMap(results), nil)
 
     // Pass the mockParser as an argument to GetRanks
-    ranks := calculate.GetRanks("YourLeagueName", mockParser)
+    calculate := &CalculateImpl{}
+
+    ranks := calculate.GetRanks("YourLeagueName")
 
     // Assert the results or behavior based on the mockParser's expectations
     points, err := mockParser.GetPoints("")
