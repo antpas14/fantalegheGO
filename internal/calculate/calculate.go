@@ -15,13 +15,12 @@ type Calculate interface {
 type CalculateImpl struct{
 }
 
-// Create fetcher and parser instances at the module level
+// Create fetcher and config instances at the module level
 var configInstance, _ = config.LoadConfig()
-var parserInstance = &parser.ParserImpl{}
 var fetcherInstance = &fetcher.FetcherImpl{configInstance.FetcherUrl}
 
 // GetRanks retrieves a list of ranks (api.Rank)
-func (c *CalculateImpl) GetRanks(leagueName string) []api.Rank {
+func (c *CalculateImpl) GetRanks(leagueName string, parserInstance parser.Parser) []api.Rank {
 	// Retrieve raw data using fetcher
 	rankingsRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.RankingUrl)
 	calendarRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.CalendarUrl)
