@@ -22,7 +22,7 @@ func (s *MyServer) Calculate(ctx echo.Context, params api.CalculateParams) error
 	}
 
 	// Get ranks from calculate module
-	ranks := calculateInstance.GetRanks(*params.LeagueName, parserInstance)
+	ranks, _ := calculateInstance.GetRanks(*params.LeagueName, parserInstance)
 
 	return ctx.JSON(http.StatusOK, ranks)
 }

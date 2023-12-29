@@ -5,7 +5,6 @@ import (
     "fantalegheGO/internal/config"
     "fantalegheGO/internal/fetcher"
     "fantalegheGO/internal/parser"
-    "log"
     "sync"
 )
 type Calculate interface {
@@ -20,19 +19,22 @@ var configInstance, _ = config.LoadConfig()
 var fetcherInstance = &fetcher.FetcherImpl{configInstance.FetcherUrl}
 
 // GetRanks retrieves a list of ranks (api.Rank)
-func (c *CalculateImpl) GetRanks(leagueName string, parserInstance parser.Parser) []api.Rank {
+func (c *CalculateImpl) GetRanks(leagueName string, parserInstance parser.Parser) ([]api.Rank, error) {
 	// Retrieve raw data using fetcher
 	rankingsRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.RankingUrl)
 	calendarRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.CalendarUrl)
 
 	rankings, err := parserInstance.GetPoints(rankingsRaw)
-	results, err := parserInstance.GetResults(calendarRaw)
+    if err != nil {
+        return nil, err
+    }
 
+	results, err := parserInstance.GetResults(calendarRaw)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return calculate(rankings, results)
+	return calculate(rankings, results), nil
 }
 
 func calculate(rankings map[string]int, results *sync.Map) []api.Rank {
@@ -94,19 +96,4 @@ func calculatePoints(t1 parser.TeamResult, t2 parser.TeamResult) float64 {
 	} else {
 		return 1
 	}
-}
-
-// Helper function to create a float64 pointer
-func float64Ptr(f float64) *float64 {
-	return &f
-}
-
-// Helper function to create an int pointer
-func intPtr(i int) *int {
-	return &i
-}
-
-// Helper function to create a string pointer
-func strPtr(s string) *string {
-	return &s
 }
