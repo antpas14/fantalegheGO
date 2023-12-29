@@ -80,7 +80,7 @@ func convertToSyncMap(results map[int][]parser.TeamResult) *sync.Map {
 	syncMap := new(sync.Map)
 
 	for key, value := range results {
-		syncMap.Store(key, "aaa")
+		syncMap.Store(key, value)
 	}
 
 	return syncMap
