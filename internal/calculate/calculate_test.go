@@ -44,6 +44,7 @@ func TestGetRanks(t *testing.T) {
     // Define the expected behaviour of the mock parser and fetcher
     results := make(map[int][]parser.TeamResult)
     results[1] = []parser.TeamResult{{Name: "TeamA", Points: 3}, {Name: "TeamB", Points: 1}, {Name: "TeamC", Points: 3}, {Name: "TeamD", Points: 1}}
+    results[2] = []parser.TeamResult{{Name: "TeamA", Points: -1}, {Name: "TeamB", Points: -1}, {Name: "TeamC", Points: -1}, {Name: "TeamD", Points: -1}}
 
     mockFetcher.On("Retrieve", mock.Anything).Return("")
     mockParser.On("GetPoints", mock.Anything).Return(map[string]int{"TeamA": 3, "TeamC": 3, "TeamB": 0, "TeamD": 0}, nil)

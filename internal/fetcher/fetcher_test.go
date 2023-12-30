@@ -85,3 +85,35 @@ func TestFetcherImpl_Retrieve_Error(t *testing.T) {
 		t.Errorf("Expected empty result, got %s", result)
 	}
 }
+
+func TestFetcherImpl_Retrieve_HTTPPost_Error(t *testing.T) {
+	// Create a mock server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Close the connection to simulate an error
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+
+	defer server.Close()
+
+	// Create an instance of FetcherImpl with the mock server URL
+	fetcher := &FetcherImpl{FetcherUrl: server.URL}
+
+	// Call the Retrieve method with a URL
+	result, err := fetcher.Retrieve("http://example.com")
+
+	// Check for an error
+	if err == nil {
+		t.Fatal("Expected an error, but got nil")
+	}
+
+	// Check the error message or any other assertions based on your implementation
+	expectedErrorMessage := "HTTP request failed with status code: 503"
+	if err.Error() != expectedErrorMessage {
+		t.Errorf("Expected error message %s, got %v", expectedErrorMessage, err)
+	}
+
+	// Check that the result is empty
+	if result != "" {
+		t.Errorf("Expected empty result, got %s", result)
+	}
+}
