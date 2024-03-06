@@ -42,10 +42,7 @@ func (f *FetcherImpl) Retrieve(url string) (string, error) {
 	}
 
 	// Read the response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
+	body, _ := io.ReadAll(resp.Body)
 
 	// Convert the response body to a string
 	responseString := string(body)
