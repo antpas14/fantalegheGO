@@ -1,45 +1,41 @@
 package fetcher
 
 import (
+	"bytes"
+	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 )
 
-func TestFetcherImpl_Retrieve_Success(t *testing.T) {
-	// Mock server to simulate a successful response
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Check the request method
-		if r.Method != http.MethodPost {
-			t.Errorf("Expected POST request, got %s", r.Method)
-		}
+type MockHTTPClient struct {
+	StatusCode   int    // Custom status code for the response
+	ResponseBody string // Custom response body for the response
+	ClientError  bool   // In case mock will return a not nil err
+}
 
-		// Check the request URL
-		if r.URL.Path != "/retrieve" {
-			t.Errorf("Expected request to /retrieve, got %s", r.URL.Path)
-		}
+func (c *MockHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	if !c.ClientError {
+		return &http.Response{
+			StatusCode: c.StatusCode,
+			Body:       ioutil.NopCloser(bytes.NewBufferString(c.ResponseBody)), // Simulate response body
+		}, nil
+	}
+	// Simulate returning an error
+	return nil, errors.New("mock client error")
+}
 
-		// Read the request body
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Fatal(err)
-		}
+func TestFetcherImplRetrieveSuccess(t *testing.T) {
+	// Define custom status code and response body for the successful scenario
+	statusCode := http.StatusOK
+	message := `{"result":"success"}`
 
-		// Verify the request body
-		expectedBody := `{"url":"http://example.com"}`
-		if string(body) != expectedBody {
-			t.Errorf("Expected request body %s, got %s", expectedBody, string(body))
-		}
-
-		// Send a successful response
-		w.Write([]byte(`{"result":"success"}`))
-	}))
-
-	defer server.Close()
-
-	// Create an instance of FetcherImpl with the mock server URL
-	fetcher := &FetcherImpl{FetcherUrl: server.URL}
+	// Create an instance of FetcherImpl with the mock HTTP client for success
+	fetcher := &FetcherImpl{
+		FetcherUrl: "http://example.com",
+		Client:     &MockHTTPClient{StatusCode: statusCode, ResponseBody: message, ClientError: false},
+	}
 
 	// Call the Retrieve method
 	result, err := fetcher.Retrieve("http://example.com")
@@ -54,19 +50,18 @@ func TestFetcherImpl_Retrieve_Success(t *testing.T) {
 	}
 }
 
-func TestFetcherImpl_Retrieve_Error(t *testing.T) {
-	// Mock server to simulate an error response
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Send an error response
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}))
+func TestFetcherImplRetrieveClientError(t *testing.T) {
+	// Define custom status code and response body for the successful scenario
+	statusCode := http.StatusOK
+	message := `{"result":"success"}`
 
-	defer server.Close()
+	// Create an instance of FetcherImpl with the mock HTTP client for success
+	fetcher := &FetcherImpl{
+		FetcherUrl: "http://example.com",
+		Client:     &MockHTTPClient{StatusCode: statusCode, ResponseBody: message, ClientError: true},
+	}
 
-	// Create an instance of FetcherImpl with the mock server URL
-	fetcher := &FetcherImpl{FetcherUrl: server.URL}
-
-	// Call the Retrieve method
+	// Call the Retrieve method with a URL
 	result, err := fetcher.Retrieve("http://example.com")
 
 	// Check for an error
@@ -75,7 +70,7 @@ func TestFetcherImpl_Retrieve_Error(t *testing.T) {
 	}
 
 	// Check the error message
-	expectedErrorMessage := "HTTP request failed with status code: 500"
+	expectedErrorMessage := "mock client error"
 	if err.Error() != expectedErrorMessage {
 		t.Errorf("Expected error message %s, got %v", expectedErrorMessage, err)
 	}
@@ -86,17 +81,16 @@ func TestFetcherImpl_Retrieve_Error(t *testing.T) {
 	}
 }
 
-func TestFetcherImpl_Retrieve_HTTPPost_Error(t *testing.T) {
-	// Create a mock server
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Close the connection to simulate an error
-		w.WriteHeader(http.StatusServiceUnavailable)
-	}))
+func TestFetcherImplRetrieveServerError(t *testing.T) {
+	// Define custom status code and response body for the error scenario
+	statusCode := http.StatusInternalServerError
+	message := "Error"
 
-	defer server.Close()
-
-	// Create an instance of FetcherImpl with the mock server URL
-	fetcher := &FetcherImpl{FetcherUrl: server.URL}
+	// Create an instance of FetcherImpl with the mock HTTP client for failure
+	fetcher := &FetcherImpl{
+		FetcherUrl: "http://example.com",
+		Client:     &MockHTTPClient{StatusCode: statusCode, ResponseBody: message, ClientError: false},
+	}
 
 	// Call the Retrieve method with a URL
 	result, err := fetcher.Retrieve("http://example.com")
@@ -106,8 +100,8 @@ func TestFetcherImpl_Retrieve_HTTPPost_Error(t *testing.T) {
 		t.Fatal("Expected an error, but got nil")
 	}
 
-	// Check the error message or any other assertions based on your implementation
-	expectedErrorMessage := "HTTP request failed with status code: 503"
+	// Check the error message
+	expectedErrorMessage := "HTTP request failed with status code: 500"
 	if err.Error() != expectedErrorMessage {
 		t.Errorf("Expected error message %s, got %v", expectedErrorMessage, err)
 	}

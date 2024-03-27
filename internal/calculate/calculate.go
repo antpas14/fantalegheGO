@@ -1,22 +1,25 @@
 package calculate
 
 import (
-	"github.com/antpas14/fantalegheEV-api"
-    "fantalegheGO/internal/config"
-    "fantalegheGO/internal/fetcher"
-    "fantalegheGO/internal/parser"
-    "sync"
+	api "github.com/antpas14/fantalegheEV-api"
+
+	"fantalegheGO/internal/config"
+	"fantalegheGO/internal/fetcher"
+	"fantalegheGO/internal/parser"
+	"net/http"
+	"sync"
 )
+
 type Calculate interface {
 	GetRanks(url string) []api.Rank
 }
 
-type CalculateImpl struct{
+type CalculateImpl struct {
 }
 
 // Create fetcher and config instances at the module level
 var configInstance, _ = config.LoadConfig()
-var fetcherInstance = &fetcher.FetcherImpl{configInstance.FetcherUrl}
+var fetcherInstance = &fetcher.FetcherImpl{configInstance.FetcherUrl, http.DefaultClient}
 
 // GetRanks retrieves a list of ranks (api.Rank)
 func (c *CalculateImpl) GetRanks(leagueName string, parserInstance parser.Parser) ([]api.Rank, error) {
@@ -25,9 +28,9 @@ func (c *CalculateImpl) GetRanks(leagueName string, parserInstance parser.Parser
 	calendarRaw, _ := fetcherInstance.Retrieve(configInstance.BaseUrl + leagueName + configInstance.CalendarUrl)
 
 	rankings, err := parserInstance.GetPoints(rankingsRaw)
-    if err != nil {
-        return nil, err
-    }
+	if err != nil {
+		return nil, err
+	}
 
 	results, err := parserInstance.GetResults(calendarRaw)
 	if err != nil {
@@ -48,7 +51,6 @@ func calculate(rankings map[string]int, results *sync.Map) []api.Rank {
 
 	results.Range(func(_, value interface{}) bool {
 		teamResults = make([]parser.TeamResult, 0)
-
 
 		if trSlice, ok := value.([]parser.TeamResult); ok {
 			teamResults = append(teamResults, trSlice...)
