@@ -1,24 +1,15 @@
 package parser
 
 import (
-	"strings"
-	"testing"
-	"github.com/PuerkitoBio/goquery"
-	"log"
 	"io/ioutil"
+	"log"
+	"testing"
 )
-
-// MockHTML returns a mock HTML content for testing.
-func MockHTML(content string) *goquery.Document {
-	r := strings.NewReader(content)
-	doc, _ := goquery.NewDocumentFromReader(r)
-	return doc
-}
 
 func TestParserImpl_GetPoints(t *testing.T) {
 	// Mock HTML content for testing
 	mockHTML, err := readHTMLFromFile("../../testdata/ranking.txt")
-    if err != nil {
+	if err != nil {
 		log.Fatal(err)
 	}
 
