@@ -1,10 +1,21 @@
 package parser
 
 import (
+	"errors"
+	"github.com/PuerkitoBio/goquery"
 	"io/ioutil"
 	"log"
+	"strings"
 	"testing"
 )
+
+// MockDocumentProvider is a mock implementation of DocumentFromReaderProvider for testing purposes.
+type MockDocumentProvider struct{}
+
+func (m *MockDocumentProvider) NewDocumentFromReader(r *strings.Reader) (*goquery.Document, error) {
+	// Mock implementation returns a dummy document and nil error.
+	return nil, errors.New("mocked error")
+}
 
 func TestParserImpl_GetPoints(t *testing.T) {
 	// Mock HTML content for testing
@@ -13,7 +24,7 @@ func TestParserImpl_GetPoints(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	parser := &ParserImpl{}
+	parser := DefaultParserImpl()
 	points, err := parser.GetPoints(mockHTML)
 
 	if err != nil {
@@ -27,6 +38,25 @@ func TestParserImpl_GetPoints(t *testing.T) {
 			t.Errorf("Expected points for %s: %d, got: %d", team, expectedPoints, points[team])
 		}
 	}
+}
+
+func TestParserImpl_GetPointsThrowsError(t *testing.T) {
+	// Mock HTML content for testing
+	mockHTML, err := readHTMLFromFile("../../testdata/ranking.txt")
+
+	parser := CustomParserImpl(&MockDocumentProvider{})
+	points, err := parser.GetPoints(mockHTML)
+
+	// Check the error message
+	expectedErrorMessage := "mocked error"
+	if err.Error() != expectedErrorMessage {
+		t.Errorf("Expected error message %s, got %v", expectedErrorMessage, err)
+	}
+
+	if points != nil {
+		t.Fatalf("Points should be nil")
+	}
+
 }
 
 func TestParserImpl_GetResults(t *testing.T) {
@@ -48,7 +78,7 @@ func TestParserImpl_GetResults(t *testing.T) {
 		</div>
 	`
 
-	parser := &ParserImpl{}
+	parser := DefaultParserImpl()
 	results, err := parser.GetResults(mockHTML)
 
 	if err != nil {
@@ -82,6 +112,30 @@ func TestParserImpl_GetResults(t *testing.T) {
 				t.Errorf("Expected team result for key %s: %v, got: %v", key, expectedTeamResult, teamResults[i])
 			}
 		}
+	}
+}
+
+func TestParserImpl_GetResultsInvalidHTML(t *testing.T) {
+	// Mock HTML content for testing
+	mockHTML := ``
+
+	parser := CustomParserImpl(&MockDocumentProvider{})
+	results, err := parser.GetResults(mockHTML)
+
+	// Check the error message
+	expectedErrorMessage := "mocked error"
+
+	if err.Error() != expectedErrorMessage {
+		t.Errorf("Expected error message %s, got %v", expectedErrorMessage, err)
+	}
+
+	isEmpty := true
+	results.Range(func(key, value interface{}) bool {
+		return false
+	})
+
+	if !isEmpty {
+		t.Fatalf("Results should be empty")
 	}
 }
 
