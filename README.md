@@ -3,7 +3,7 @@
 
 # FantalegheGO
 
-This is a Java implementation of [fantalegheEV project](https://github.com/antpas14/fantalegheEV-api)
+This is a golang implementation of [fantalegheEV project](https://github.com/antpas14/fantalegheEV-api)
 
 To summarise this project is a web application that permits to recalculate a fantasy league rank in a *fair* way.
 
