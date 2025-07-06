@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: go build -v ./...
       - name: Install test dependencies
-        run: go get -t fantalegheGO/internal/calculate
+        run: go get
       - name: Run Tests with Coverage
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       - name: Upload coverage reports to Codecov
