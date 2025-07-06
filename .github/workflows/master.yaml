@@ -23,7 +23,7 @@ jobs:
       - name: Build
         run: go build -v ./...
       - name: Install test dependencies
-        run: go get
+        run: go mod tidy
       - name: Run Tests with Coverage
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       - name: Upload coverage reports to Codecov
