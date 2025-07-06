@@ -1,5 +1,5 @@
 # Build Stage
-FROM golang:1.21.3-alpine3.18 AS BuildStage
+FROM golang:1.24.4-alpine3.22 AS BuildStage
 RUN apk update && apk add --no-cache musl-dev gcc build-base
 RUN apk add --no-cache make
 # Create user
