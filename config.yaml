@@ -1,4 +1,0 @@
-baseUrl: "http://leghe.fantacalcio.it/"
-calendarUrl: "/calendario"
-rankingUrl: "/classifica"
-fetcherUrl: "http://localhost:5000"
