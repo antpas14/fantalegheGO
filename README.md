@@ -3,16 +3,10 @@
 
 # FantalegheGO
 
-This is a golang implementation of [fantalegheEV project](https://github.com/antpas14/fantalegheEV-api)
+This is a golang implementation of [fantalegheEV project](https://github.com/antpas14/fantalegheEV-api). More info on how it works on here, this repository is an implementation of that APi using golang
 
-To summarise this project is a web application that permits to recalculate a fantasy league rank in a *fair* way.
+This application backend uses [echo](https://github.com/labstack/echo), a minimalistic web server and [excelize](https://github.com/qax-os/excelize) to parse an excel file containing the calendar of the league
 
-
-This application backend uses [echo](https://github.com/labstack/echo), a minimalistic web server and [goQuery](github.com/PuerkitoBio/goquery) to parse HTTP returned from <a href="https://github.com/antpas14/webFetcher">webFetcher</a>, a simple app that returns the HTML of the requested page after some javascript rendering is executed.
-
-A docker compose is provided which also utilises a basic UI that can be found <a href="https://github.com/antpas14/fantalegheEV-ui">here</a>
-
-This application analyzes football fantasy league hosted on <a href="http://leghe.fantacalcio.it">leghe.fantacalcio.it</a>. I have no relationship with them.
 
 ### License
 
