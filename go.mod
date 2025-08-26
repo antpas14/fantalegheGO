@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/antpas14/fantalegheEV-api v0.0.0-20250421110137-a3425e425a77
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	github.com/xuri/excelize/v2 v2.9.1
 )
 
