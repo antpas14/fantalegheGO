@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/antpas14/fantalegheEV-api v0.0.0-20250421110137-a3425e425a77
-	github.com/labstack/echo/v4 v4.15.4
+	github.com/labstack/echo/v4 v4.16.0
 	github.com/stretchr/testify v1.12.1
 	github.com/xuri/excelize/v2 v2.11.0
 )
@@ -26,5 +26,5 @@ require (
 	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/text v0.38.0 // indirect
+	golang.org/x/text v0.40.0 // indirect
 )
